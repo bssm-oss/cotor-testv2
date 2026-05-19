@@ -23,6 +23,45 @@ body {
     line-height: 1.6;
 }
 
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: 0;
+    z-index: 1000;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--accent-color);
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+.sr-only:not(:focus):not(:active) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.error-message {
+    display: block;
+    color: #ff6b6b;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    min-height: 1.25rem;
+}
+
+.error-message:empty {
+    display: none;
+}
+
 header {
     text-align: center;
     padding: 2rem 1rem;
@@ -73,6 +112,11 @@ header p {
     background-color: #3a7bc8;
 }
 
+.cta-button:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
+}
+
 .features {
     padding: 3rem 1rem;
 }
@@ -101,6 +145,12 @@ header p {
 }
 
 .feature-card:hover {
+    transform: translateY(-5px);
+}
+
+.feature-card:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
     transform: translateY(-5px);
 }
 
@@ -171,11 +221,22 @@ footer {
     font-family: var(--font-sans);
 }
 
-.form-group input:focus,
-.form-group textarea:focus,
-.form-group select:focus {
-    outline: none;
+.form-group input:focus-visible,
+.form-group textarea:focus-visible,
+.form-group select:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
     border-color: var(--accent-color);
+}
+
+.form-group input[aria-invalid="true"],
+.form-group textarea[aria-invalid="true"] {
+    border-color: #ff6b6b;
+}
+
+.form-group input[aria-invalid="true"]:focus-visible,
+.form-group textarea[aria-invalid="true"]:focus-visible {
+    outline-color: #ff6b6b;
 }
 
 .form-actions {
@@ -200,6 +261,11 @@ footer {
     background-color: #555555;
 }
 
+.cancel-button:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
+}
+
 .issues-list {
     max-width: 800px;
     margin: 0 auto;
@@ -218,6 +284,12 @@ footer {
 .issue-item:hover {
     border-color: var(--accent-color);
     background-color: var(--bg-primary);
+}
+
+.issue-item:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+    border-color: var(--accent-color);
 }
 
 .issue-item.selected {
@@ -277,5 +349,16 @@ footer {
     
     .cancel-button {
         width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
 }

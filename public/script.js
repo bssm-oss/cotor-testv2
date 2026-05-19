@@ -1,85 +1,134 @@
-// Simple script for landing page interactivity and issue creation
 document.addEventListener('DOMContentLoaded', function() {
-    // Add any interactive behavior here
-    console.log('Landing page loaded');
-    
-    // Issue creation functionality
     const newIssueBtn = document.getElementById('new-issue-btn');
     const issueForm = document.getElementById('issue-form');
     const cancelIssueBtn = document.getElementById('cancel-issue-btn');
     const issueCreateForm = document.getElementById('issue-create-form');
     const issuesList = document.getElementById('issues-list');
-    
-    // Show/hide issue form
+    const notificationArea = document.getElementById('notification-area');
+    const titleInput = document.getElementById('issue-title');
+    const descriptionInput = document.getElementById('issue-description');
+    const titleError = document.getElementById('title-error');
+    const descriptionError = document.getElementById('description-error');
+
+    function announce(message) {
+        notificationArea.textContent = '';
+        requestAnimationFrame(function() {
+            notificationArea.textContent = message;
+        });
+    }
+
+    function showForm() {
+        issueForm.style.display = 'block';
+        newIssueBtn.setAttribute('aria-expanded', 'true');
+        titleInput.focus();
+    }
+
+    function hideForm() {
+        issueForm.style.display = 'none';
+        newIssueBtn.setAttribute('aria-expanded', 'false');
+        issueCreateForm.reset();
+        titleError.textContent = '';
+        descriptionError.textContent = '';
+        titleInput.removeAttribute('aria-invalid');
+        descriptionInput.removeAttribute('aria-invalid');
+        newIssueBtn.focus();
+    }
+
+    function validateField(input, errorEl, message) {
+        if (!input.value.trim()) {
+            errorEl.textContent = message;
+            input.setAttribute('aria-invalid', 'true');
+            return false;
+        }
+        errorEl.textContent = '';
+        input.removeAttribute('aria-invalid');
+        return true;
+    }
+
+    function makeIssueItem(title, description, priority) {
+        const item = document.createElement('div');
+        item.className = 'issue-item';
+        item.setAttribute('tabindex', '0');
+        item.setAttribute('role', 'button');
+        item.setAttribute('aria-label', 'Issue: ' + title + ', Priority: ' + priority);
+
+        item.innerHTML = '\n                <h4>' + title + '</h4>\n                <div class="issue-meta">\n                    <span>Priority: ' + priority + '</span>\n                    <span>Created: ' + new Date().toLocaleString() + '</span>\n                </div>\n                <p class="issue-description">' + description + '</p>\n            ';
+
+        function selectIssue() {
+            document.querySelectorAll('.issue-item').forEach(function(el) {
+                el.classList.remove('selected');
+                el.removeAttribute('aria-current');
+            });
+            item.classList.add('selected');
+            item.setAttribute('aria-current', 'true');
+        }
+
+        item.addEventListener('click', selectIssue);
+
+        item.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                selectIssue();
+            }
+        });
+
+        return item;
+    }
+
     if (newIssueBtn) {
         newIssueBtn.addEventListener('click', function() {
-            issueForm.style.display = issueForm.style.display === 'none' ? 'block' : 'none';
-            if (issueForm.style.display === 'block') {
-                document.getElementById('issue-title').focus();
+            if (issueForm.style.display === 'none' || issueForm.style.display === '') {
+                showForm();
+            } else {
+                hideForm();
             }
         });
     }
-    
-    // Cancel issue creation
+
     if (cancelIssueBtn) {
-        cancelIssueBtn.addEventListener('click', function() {
-            issueForm.style.display = 'none';
-            issueCreateForm.reset();
-        });
+        cancelIssueBtn.addEventListener('click', hideForm);
     }
-    
-    // Handle issue form submission
+
     if (issueCreateForm) {
         issueCreateForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            
-            const title = document.getElementById('issue-title').value;
-            const description = document.getElementById('issue-description').value;
-            const priority = document.getElementById('issue-priority').value;
-            
-            // Create issue element
-            const issueItem = document.createElement('div');
-            issueItem.className = 'issue-item';
-            issueItem.innerHTML = `
-                <h4>${title}</h4>
-                <div class="issue-meta">
-                    <span>Priority: ${priority}</span>
-                    <span>Created: ${new Date().toLocaleString()}</span>
-                </div>
-                <p class="issue-description">${description}</p>
-            `;
-            
-            // Add click functionality for issue selection
-            issueItem.addEventListener('click', function() {
-                // Remove selected class from all issues
-                document.querySelectorAll('.issue-item').forEach(item => {
-                    item.classList.remove('selected');
-                });
-                // Add selected class to clicked issue
-                this.classList.add('selected');
-            });
-            
-            // Add to issues list
+
+            var titleValid = validateField(titleInput, titleError, 'Title is required.');
+            var descValid = validateField(descriptionInput, descriptionError, 'Description is required.');
+
+            if (!titleValid || !descValid) {
+                if (!titleValid) titleInput.focus();
+                return;
+            }
+
+            var title = titleInput.value;
+            var description = descriptionInput.value;
+            var priority = document.getElementById('issue-priority').value;
+
+            var issueItem = makeIssueItem(title, description, priority);
             issuesList.insertBefore(issueItem, issuesList.firstChild);
-            
-            // Reset form and hide
-            issueCreateForm.reset();
-            issueForm.style.display = 'none';
-            
-            // Show success message (optional)
-            alert('Issue created successfully!');
+
+            hideForm();
+            announce('Issue created successfully: ' + title);
         });
     }
-    
-    // Example: smooth scrolling for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+
+    titleInput.addEventListener('blur', function() {
+        validateField(titleInput, titleError, 'Title is required.');
+    });
+
+    descriptionInput.addEventListener('blur', function() {
+        validateField(descriptionInput, descriptionError, 'Description is required.');
+    });
+
+    document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
         anchor.addEventListener('click', function(e) {
             e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
+            var target = document.querySelector(this.getAttribute('href'));
             if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth'
-                });
+                target.scrollIntoView({ behavior: 'smooth' });
+                target.setAttribute('tabindex', '-1');
+                target.focus({ preventScroll: true });
             }
         });
     });
