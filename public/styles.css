@@ -211,6 +211,19 @@ footer {
     border-radius: 8px;
     border: 1px solid var(--border-color);
     margin-bottom: 1rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.issue-item:hover {
+    border-color: var(--accent-color);
+    background-color: var(--bg-primary);
+}
+
+.issue-item.selected {
+    border-color: var(--accent-color);
+    background-color: var(--bg-primary);
+    box-shadow: 0 0 0 2px var(--accent-color);
 }
 
 .issue-item h4 {
