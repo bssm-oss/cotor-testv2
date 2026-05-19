@@ -49,6 +49,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 <p class="issue-description">${description}</p>
             `;
             
+            // Add click functionality for issue selection
+            issueItem.addEventListener('click', function() {
+                // Remove selected class from all issues
+                document.querySelectorAll('.issue-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                // Add selected class to clicked issue
+                this.classList.add('selected');
+            });
+            
             // Add to issues list
             issuesList.insertBefore(issueItem, issuesList.firstChild);
             
