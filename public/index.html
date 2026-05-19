@@ -34,34 +34,40 @@
                 </div>
             </div>
         </section>
-        <section id="issue-board" class="issue-board">
-            <h2>Issue Board</h2>
+        <section id="issue-board" class="issue-board" aria-labelledby="issue-board-heading">
+            <h2 id="issue-board-heading">Issue Board</h2>
             <div class="issue-controls">
                 <button id="new-issue-btn" class="cta-button">Create New Issue</button>
             </div>
-            <div id="issue-form" class="issue-form" style="display: none;">
+            <div id="issue-form" class="issue-form" style="display: none;" aria-hidden="true">
                 <h3>Create New Issue</h3>
-                <form id="issue-create-form">
+                <form id="issue-create-form" aria-labelledby="issue-create-form-heading">
+                    <h4 id="issue-create-form-heading" class="sr-only">Create Issue Form</h4>
                     <div class="form-group">
                         <label for="issue-title">Title</label>
-                        <input type="text" id="issue-title" required>
+                        <input type="text" id="issue-title" required aria-required="true">
+                        <div id="title-error" class="error-message" aria-live="polite"></div>
                     </div>
                     <div class="form-group">
                         <label for="issue-description">Description</label>
-                        <textarea id="issue-description" rows="4" required></textarea>
+                        <textarea id="issue-description" rows="4" required aria-required="true"></textarea>
+                        <div id="description-error" class="error-message" aria-live="polite"></div>
                     </div>
                     <div class="form-group">
                         <label for="issue-priority">Priority</label>
-                        <select id="issue-priority">
+                        <select id="issue-priority" required aria-required="true">
+                            <option value="">Select priority level</option>
                             <option value="low">Low</option>
                             <option value="medium">Medium</option>
                             <option value="high">High</option>
                         </select>
+                        <div id="priority-error" class="error-message" aria-live="polite"></div>
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="cta-button">Create Issue</button>
                         <button type="button" id="cancel-issue-btn" class="cancel-button">Cancel</button>
                     </div>
+                    <div id="form-status" aria-live="assertive"></div>
                 </form>
             </div>
             <div id="issues-list" class="issues-list">
