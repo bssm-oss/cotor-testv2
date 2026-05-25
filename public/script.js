@@ -1,14 +1,48 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const newIssueBtn = document.getElementById('new-issue-btn');
-    const issueForm = document.getElementById('issue-form');
-    const cancelIssueBtn = document.getElementById('cancel-issue-btn');
-    const issueCreateForm = document.getElementById('issue-create-form');
-    const issuesList = document.getElementById('issues-list');
-    const notificationArea = document.getElementById('notification-area');
-    const titleInput = document.getElementById('issue-title');
-    const descriptionInput = document.getElementById('issue-description');
-    const titleError = document.getElementById('title-error');
-    const descriptionError = document.getElementById('description-error');
+    var STORAGE_KEY = 'cotor-issue-board';
+
+    var newIssueBtn = document.getElementById('new-issue-btn');
+    var issueForm = document.getElementById('issue-form');
+    var cancelIssueBtn = document.getElementById('cancel-issue-btn');
+    var issueCreateForm = document.getElementById('issue-create-form');
+    var issuesList = document.getElementById('issues-list');
+    var emptyState = document.getElementById('empty-state');
+    var issueCountEl = document.getElementById('issue-count');
+    var notificationArea = document.getElementById('notification-area');
+    var titleInput = document.getElementById('issue-title');
+    var descriptionInput = document.getElementById('issue-description');
+    var titleError = document.getElementById('title-error');
+    var descriptionError = document.getElementById('description-error');
+
+    function loadIssues() {
+        try {
+            var data = localStorage.getItem(STORAGE_KEY);
+            return data ? JSON.parse(data) : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function saveIssues(issues) {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(issues));
+        } catch (e) {}
+    }
+
+    function updateCount() {
+        var count = issuesList.querySelectorAll('.issue-item').length;
+        if (issueCountEl) {
+            issueCountEl.textContent = count + ' issue' + (count !== 1 ? 's' : '');
+        }
+    }
+
+    function toggleEmptyState() {
+        var hasIssues = issuesList.querySelectorAll('.issue-item').length > 0;
+        if (emptyState) {
+            emptyState.style.display = hasIssues ? 'none' : 'block';
+        }
+        updateCount();
+    }
 
     function announce(message) {
         notificationArea.textContent = '';
@@ -45,25 +79,34 @@ document.addEventListener('DOMContentLoaded', function() {
         return true;
     }
 
-    function makeIssueItem(title, description, priority) {
-        const item = document.createElement('div');
+    function makeIssueItem(id, title, description, priority, createdAt) {
+        var item = document.createElement('div');
         item.className = 'issue-item';
         item.setAttribute('tabindex', '0');
         item.setAttribute('role', 'button');
         item.setAttribute('aria-label', 'Issue: ' + title + ', Priority: ' + priority);
+        item.dataset.issueId = id;
 
-        item.innerHTML = '\n                <h4>' + title + '</h4>\n                <div class="issue-meta">\n                    <span>Priority: ' + priority + '</span>\n                    <span>Created: ' + new Date().toLocaleString() + '</span>\n                </div>\n                <p class="issue-description">' + description + '</p>\n            ';
+        item.innerHTML = '\n                <div class="issue-item-header">\n                    <h4>' + escapeHtml(title) + '</h4>\n                    <button type="button" class="delete-issue-btn" aria-label="Delete issue: ' + escapeHtml(title) + '">\n                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">\n                            <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>\n                        </svg>\n                    </button>\n                </div>\n                <div class="issue-meta">\n                    <span>Priority: ' + priority + '</span>\n                    <span>Created: ' + createdAt + '</span>\n                </div>\n                <p class="issue-description">' + escapeHtml(description) + '</p>\n            ';
 
         function selectIssue() {
-            document.querySelectorAll('.issue-item').forEach(function(el) {
-                el.classList.remove('selected');
-                el.removeAttribute('aria-current');
-            });
-            item.classList.add('selected');
-            item.setAttribute('aria-current', 'true');
+            if (item.classList.contains('selected')) {
+                item.classList.remove('selected');
+                item.removeAttribute('aria-current');
+            } else {
+                document.querySelectorAll('.issue-item').forEach(function(el) {
+                    el.classList.remove('selected');
+                    el.removeAttribute('aria-current');
+                });
+                item.classList.add('selected');
+                item.setAttribute('aria-current', 'true');
+            }
         }
 
-        item.addEventListener('click', selectIssue);
+        item.addEventListener('click', function(e) {
+            if (e.target.closest('.delete-issue-btn')) return;
+            selectIssue();
+        });
 
         item.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -72,8 +115,47 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
+        var deleteBtn = item.querySelector('.delete-issue-btn');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                deleteIssue(id, item);
+            });
+        }
+
         return item;
     }
+
+    function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML;
+    }
+
+    function deleteIssue(id, item) {
+        var issues = loadIssues();
+        var idx = issues.findIndex(function(i) { return i.id === id; });
+        if (idx !== -1) {
+            var title = issues[idx].title;
+            issues.splice(idx, 1);
+            saveIssues(issues);
+            item.remove();
+            toggleEmptyState();
+            announce('Issue deleted: ' + title);
+        }
+    }
+
+    function renderIssues() {
+        issuesList.innerHTML = '';
+        var issues = loadIssues();
+        issues.forEach(function(issue) {
+            var item = makeIssueItem(issue.id, issue.title, issue.description, issue.priority, issue.createdAt);
+            issuesList.appendChild(item);
+        });
+        toggleEmptyState();
+    }
+
+    renderIssues();
 
     if (newIssueBtn) {
         newIssueBtn.addEventListener('click', function() {
@@ -101,14 +183,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            var title = titleInput.value;
-            var description = descriptionInput.value;
+            var title = titleInput.value.trim();
+            var description = descriptionInput.value.trim();
             var priority = document.getElementById('issue-priority').value;
+            var createdAt = new Date().toLocaleString();
+            var id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
-            var issueItem = makeIssueItem(title, description, priority);
+            var issues = loadIssues();
+            issues.unshift({ id: id, title: title, description: description, priority: priority, createdAt: createdAt });
+            saveIssues(issues);
+
+            var issueItem = makeIssueItem(id, title, description, priority, createdAt);
             issuesList.insertBefore(issueItem, issuesList.firstChild);
 
             hideForm();
+            toggleEmptyState();
             announce('Issue created successfully: ' + title);
         });
     }

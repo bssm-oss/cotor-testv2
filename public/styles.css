@@ -266,9 +266,39 @@ footer {
     outline-offset: 2px;
 }
 
+.issues-toolbar {
+    max-width: 800px;
+    margin: 0 auto 1rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.issue-count {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-primary);
+}
+
 .issues-list {
     max-width: 800px;
     margin: 0 auto;
+}
+
+.empty-state {
+    max-width: 800px;
+    margin: 2rem auto;
+    text-align: center;
+    padding: 3rem 1rem;
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
+    color: var(--text-secondary);
+}
+
+.empty-state p {
+    font-size: 1.1rem;
 }
 
 .issue-item {
@@ -298,10 +328,40 @@ footer {
     box-shadow: 0 0 0 2px var(--accent-color);
 }
 
-.issue-item h4 {
-    margin-top: 0;
+.issue-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
     margin-bottom: 0.5rem;
+}
+
+.issue-item-header h4 {
     color: var(--accent-color);
+    margin: 0;
+}
+
+.delete-issue-btn {
+    background: none;
+    border: 1px solid transparent;
+    color: #666666;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    line-height: 1;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.delete-issue-btn:hover {
+    color: #ff6b6b;
+    border-color: #ff6b6b;
+    background-color: rgba(255, 107, 107, 0.1);
+}
+
+.delete-issue-btn:focus-visible {
+    outline: 2px solid #ff6b6b;
+    outline-offset: 2px;
+    color: #ff6b6b;
 }
 
 .issue-item .issue-meta {
